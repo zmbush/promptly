@@ -4,7 +4,6 @@ import argparse
 import sys
 import os
 import subprocess
-import time
 import signal
 from powerline import Powerlines
 from powerline.line import Color
@@ -18,6 +17,7 @@ def getSubprocessOutput(arguments):
         return s.communicate()[0]
     else:
         raise subprocess.CalledProcessError('fail', 'fail')
+
 
 def createTimeout(seconds):
     class TimeoutException(Exception):
@@ -44,6 +44,7 @@ def createTimeout(seconds):
 def addSystemInfo(p):
     p.append('%c', Color.CWD_FG, Color.CMD_PASSED_BG)
 
+
 class Git(object):
     def __init__(self, p):
         self.p = p
@@ -66,10 +67,10 @@ class Git(object):
         statuses = filter(bool, status.split('\n'))
         p.append
         if len(statuses) > 0:
-            p.append("%d modified files" % len(statuses), Color.REPO_DIRTY_FG, Color.REPO_DIRTY_BG)
+            p.append("%d modified files" % len(statuses), Color.REPO_DIRTY_FG,
+                     Color.REPO_DIRTY_BG)
         else:
             p.append("no changes", Color.REPO_CLEAN_FG, Color.REPO_CLEAN_BG)
-
 
     def outgoing(self):
         pass
