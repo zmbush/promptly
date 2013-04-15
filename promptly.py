@@ -42,12 +42,14 @@ def createTimeout(seconds):
 
 
 def addSystemInfo(p):
-    p.append('%c', Color.CWD_FG, Color.CMD_PASSED_BG)
+    p.append('%c ', Color.CWD_FG, Color.CMD_PASSED_BG)
 
 
 class Git(object):
     def __init__(self, p):
         self.p = p
+        self._branch = None
+        self._upstream = None
 
     def valid(self):
         try:
@@ -62,15 +64,63 @@ class Git(object):
         except subprocess.CalledProcessError:
             return False
 
+    def branch(self):
+        if self._branch is None:
+            branches = getSubprocessOutput(['git', 'branch']).split('\n')
+            for b in branches:
+                if b == '':
+                    continue
+                if b[0] == '*':
+                    self._branch = b[2:]
+        return self._branch
+
+    def upstream(self):
+        if self._upstream is None:
+            branch = self.branch()
+            if branch == '':
+                return ''
+            try:
+                return getSubprocessOutput(['git', 'config', 'branch.' +
+                                            branch + '.remote']).split('\n')[0]
+            except:
+                return '?'
+
+    def colorOfStatus(self, stat):
+        retval = (1, 0)
+        swap = False
+        check = ''
+        if stat[0] == ' ':
+            check = stat[1]
+        elif stat[1] == ' ':
+            check = stat[0]
+            swap = True
+        else:
+            check = stat[:2]
+
+        if 'M' == check:
+            retval = Color.GIT_MOD_UNSTAGED_FG, Color.GIT_MOD_UNSTAGED_BG
+
+        if swap:
+            retval = (retval[1], retval[0])
+
+        return retval
+
     def status(self):
         status = getSubprocessOutput(['git', 'status', '-s'])
         statuses = filter(bool, status.split('\n'))
-        p.append
+        branch = self.branch()
+        fgColor = Color.REPO_CLEAN_FG
+        bgColor = Color.REPO_CLEAN_BG
         if len(statuses) > 0:
-            p.append("%d modified files" % len(statuses), Color.REPO_DIRTY_FG,
-                     Color.REPO_DIRTY_BG)
-        else:
-            p.append("no changes", Color.REPO_CLEAN_FG, Color.REPO_CLEAN_BG)
+            fgColor = Color.REPO_DIRTY_FG
+            bgColor = Color.REPO_DIRTY_BG
+        self.p.append(u' \uE0A0 %s' % (branch,), fgColor, bgColor)
+        if len(statuses) > 0:
+            for status in statuses:
+                self.p.newline()
+                fgColor, bgColor = self.colorOfStatus(status[:2])
+                self.p.append(' ' + status[:2].strip() + ' ', fgColor, bgColor)
+                self.p.append(status[2:], Color.PATH_FG, Color.PATH_BG)
 
     def outgoing(self):
         pass
@@ -89,12 +139,18 @@ if __name__ == "__main__":
     arg_parser.add_argument('--cwd-only', action='store_true')
     arg_parser.add_argument('--mode', action='store', default='patched')
     arg_parser.add_argument('--shell', action='store', default='zsh')
-    arg_parser.add_argument('prev_error', nargs='?', default=0)
+    arg_parser.add_argument('prev_error', nargs='?', default=0, type=int)
     args = arg_parser.parse_args()
 
     p = Powerlines(mode=args.mode, shell=args.shell)
     addSystemInfo(p)
     g = Git(p)
     g.load()
+    fgColor = Color.CMD_PASSED_FG
+    bgColor = Color.CMD_PASSED_BG
+    if args.prev_error != 0:
+        fgColor = Color.CMD_FAILED_FG
+        bgColor = Color.CMD_FAILED_BG
+    p.append(' %# ', fgColor, bgColor)
 
-    sys.stdout.write(p.draw())
+    sys.stdout.write(p.draw() + ' ')
