@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-class Line:
+class Line(object):
     symbols = {
         'compatible': {
             'separator': u'\u25B6',
@@ -67,7 +67,7 @@ class Line:
                 + self.reset).encode('utf-8')
 
 
-class Color:
+class Color(object):
     # The following link is a pretty good resources for color values:
     # http://www.calmar.ws/vim/color-output.png
 
@@ -93,7 +93,7 @@ class Color:
     VIRTUAL_ENV_FG = 00
 
 
-class Segment:
+class Segment(object):
     def __init__(self, powerline, content, fg, bg, separator=None,
                  separator_fg=None):
         self.powerline = powerline
