@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import sys
 
 class Line(object):
     symbols = {
@@ -9,8 +9,8 @@ class Line(object):
             'separator_thin': u'\u276F'
         },
         'patched': {
-            'separator': u'\u2B80',
-            'separator_thin': u'\u2B81'
+            'separator': u'\uE0B0',
+            'separator_thin': u'\uE0B1'
         },
         'flat': {
             'separator': '',
@@ -19,9 +19,9 @@ class Line(object):
     }
 
     color_templates = {
-        'bash': '\\[\\e%s\\]',
-        'zsh': '%%{%s%%}',
-        'bare': '%s',
+        'bash': '\\[\033%s\\]',
+        'zsh': '%%{\033%s%%}',
+        'bare': '\033%s',
     }
 
     root_indicators = {
@@ -63,8 +63,9 @@ class Line(object):
 
     def draw(self):
         shifted = self.segments[1:] + [None]
-        return (''.join((c.draw(n) for c, n in zip(self.segments, shifted)))
-                + self.reset).encode('utf-8')
+        retval = (''.join((c.draw(n) for c, n in zip(self.segments, shifted)))
+                  + self.reset)
+        return retval
 
 
 class Color(object):
@@ -80,6 +81,9 @@ class Color(object):
     REPO_CLEAN_FG = 0  # black
     REPO_DIRTY_BG = 161  # pink/red
     REPO_DIRTY_FG = 15  # white
+
+    GIT_MOD_UNSTAGED_BG = 0
+    GIT_MOD_UNSTAGED_FG = 21
 
     CMD_PASSED_BG = 236
     CMD_PASSED_FG = 15
@@ -109,10 +113,11 @@ class Segment(object):
         else:
             separator_bg = self.powerline.reset
 
-        return ''.join((
+        retval = ''.join((
             self.powerline.fgcolor(self.fg),
             self.powerline.bgcolor(self.bg),
             self.content,
             separator_bg,
             self.powerline.fgcolor(self.separator_fg),
             self.separator))
+        return retval

@@ -34,6 +34,8 @@ nosetests.xml
 .project
 .pydevproject
 
+*.ropeproject/*
+
 # editors
 *~
 *.swp
