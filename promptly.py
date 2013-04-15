@@ -68,7 +68,7 @@ class Git(object):
         if len(statuses) > 0:
             p.append("%d modified files" % len(statuses), Color.REPO_DIRTY_FG, Color.REPO_DIRTY_BG)
         else:
-            p.append("no changes" % len(statuses), Color.REPO_CLEAN_FG, Color.REPO_CLEAN_BG)
+            p.append("no changes", Color.REPO_CLEAN_FG, Color.REPO_CLEAN_BG)
 
 
     def outgoing(self):
